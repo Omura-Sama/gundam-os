@@ -83,5 +83,16 @@ class GundamKernel {
     listModules() {
         return Array.from(this.installedModules.keys());
     }
+    getModuleDetails() {
+        const details = [];
+        this.installedModules.forEach((mod) => {
+            details.push({
+                name: mod.name,
+                version: mod.version,
+                status: 'Online 🟢'
+            });
+        });
+        return details;
+    }
 }
 exports.GundamKernel = GundamKernel;
