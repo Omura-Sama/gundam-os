@@ -1,5 +1,6 @@
 import express, { Application } from 'express';
 import { GundamModule } from './types';
+import db from './db';
 
 export class GundamKernel {
     public app: Application;
@@ -16,7 +17,7 @@ export class GundamKernel {
             return;
         }
 
-        module.init(this.app);
+        module.init(this.app, db);
         this.modules.set(module.name, module);
         console.log(`[kernel] Striker Pack loaded: ${module.name} (v${module.version})`);
     }

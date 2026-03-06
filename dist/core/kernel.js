@@ -5,6 +5,7 @@ var __importDefault = (this && this.__importDefault) || function (mod) {
 Object.defineProperty(exports, "__esModule", { value: true });
 exports.GundamKernel = void 0;
 const express_1 = __importDefault(require("express"));
+const db_1 = __importDefault(require("./db"));
 class GundamKernel {
     app;
     modules = new Map();
@@ -17,7 +18,7 @@ class GundamKernel {
             console.warn(`Module ${module.name} is already registered.`);
             return;
         }
-        module.init(this.app);
+        module.init(this.app, db_1.default);
         this.modules.set(module.name, module);
         console.log(`[kernel] Striker Pack loaded: ${module.name} (v${module.version})`);
     }
