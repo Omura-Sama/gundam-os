@@ -1,10 +1,7 @@
-import { Application } from 'express';
-
-import { PrismaClient } from '@prisma/client';
+import { Express } from 'express';
 
 export interface GundamModule {
     name: string;
     version: string;
-    // Inject Express app and Prisma instance to Striker Packs
-    init(app: Application, db?: PrismaClient): void;
+    install: (app: Express) => void;
 }
