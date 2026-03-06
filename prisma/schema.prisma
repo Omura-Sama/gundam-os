@@ -20,6 +20,35 @@ model CoreUser {
   role      String   @default("STAFF")
   createdAt DateTime @default(now())
   updatedAt DateTime @updatedAt
+  
+  // Relasi ke tabel hybrid SystemRecord
+  records   SystemRecord[]
 
   @@map("core_users")
+}
+
+// --- HYBRID ARMOR ENTITY ---
+// Model polymorphic untuk menyimpan data dari berbagai macam modul (Striker Packs)
+model SystemRecord {
+  id          String   @id @default(uuid())
+  
+  // Hardpoints (Identifikasi Modul & Tipe Data)
+  moduleName  String   // ex: 'BeamRifle', 'PatientData', 'Inventory'
+  recordType  String   // ex: 'Transaction', 'MasterItem', 'Profile'
+  
+  // Ownership
+  ownerId     Int?     // Mengacu ke CoreUser.id (optional jika data sistem)
+  owner       CoreUser? @relation(fields: [ownerId], references: [id])
+  
+  // Psycho-Frame (Data Fleksibel JSON)
+  payload     Json
+  
+  // Timestamps
+  createdAt   DateTime @default(now())
+  updatedAt   DateTime @updatedAt
+
+  // Indexing untuk mempercepat pencarian spesifik per-modul
+  @@index([moduleName, recordType])
+  @@index([ownerId])
+  @@map("system_records")
 }

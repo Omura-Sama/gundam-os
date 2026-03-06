@@ -1,83 +1,101 @@
 # 🤖 GUNDAM-OS: Modular ERP Framework
 
-![Status](https://img.shields.io/badge/STATUS-OPERATIONAL-green?style=for-the-badge&logo=probot)
-![Version](https://img.shields.io/badge/VERSION-1.0.0--ALPHA-red?style=for-the-badge)
-![License](https://img.shields.io/badge/LICENSE-MIT-blue?style=for-the-badge)
+![Gundam Banner](https://img.shields.io/badge/STATUS-OPERATIONAL-green?style=for-the-badge&logo=probot)
+![License](https://img.shields.io/badge/LICENSE-FREE_FOR_ALL-blue?style=for-the-badge)
+![Version](https://img.shields.io/badge/VERSION-0.0.1--ALPHA-red?style=for-the-badge)
 
-**GUNDAM-OS** adalah *Base Master* framework sistem informasi berbasis Node.js, Express, dan TypeScript. Dirancang dengan filosofi **Mobile Suit Architecture**, sistem ini memisahkan "Inner Frame" (Core Engine) dari "Striker Packs" (Business Modules). 
+**GUNDAM-OS** adalah framework sistem informasi (ERP) berbasis Node.js yang dirancang dengan filosofi **Mobile Suit Architecture**. Sistem ini memisahkan "Inner Frame" (Core Engine) dari "Equipment/Weapons" (Business Modules), memungkinkan skalabilitas ekstrem dan kemudahan modifikasi.
 
-Sistem ini diciptakan sebagai fondasi *open-source* yang kokoh, di di mana *core system*-nya bisa digunakan secara gratis, namun sangat fleksibel untuk dikustomisasi menjadi berbagai aplikasi komersial spesifik (seperti sistem *booking*, koperasi, atau ERP *travel*).
+> *"Bukan hanya sekadar kode, ini adalah senjata untuk efisiensi bisnis Anda."*
 
 ---
 
-## 🏗️ The Architecture (Mobile Suit Blueprint)
+## 🏗️ The Architecture (The Mobile Suit Blueprint)
 
-Gundam-OS bekerja dengan konsep *Plug-and-Play*:
+Sistem ini dibagi menjadi beberapa lapisan komponen yang dapat di-*swap* atau di-*merge* kapan saja:
 
-- **The Inner Frame (`/src/core`):** Rangka utama robot. Menangani pemuat modul (*Module Loader*), *routing* dasar, dan nantinya akan mengurus *Auth* serta koneksi *Database*.
-- **The Striker Packs (`/src/modules`):** Modul bisnis independen. Pasang modul yang dibutuhkan, dan sistem akan langsung mengenalinya tanpa harus membongkar *Inner Frame*.
-
-### 🎯 Use Case Scenarios (The Loadouts)
-Satu *Base Master*, berbagai kemungkinan:
-1. **Loadout A (Photography Studio):** Pasang Modul *Appointment* & *Gallery* ➡️ Menjadi sistem *booking* untuk sesi Newborn Photography & 3D Baby Foot Casting.
-2. **Loadout B (Travel Agency):** Pasang Modul *Manifest* & *Inventory* ➡️ Menjadi sistem operasional Travel Umroh.
-3. **Loadout C (Financial):** Pasang Modul *Ledger* & *Loan Tracking* ➡️ Menjadi sistem manajemen Koperasi.
+| Component | Analogous To | Description |
+| :--- | :--- | :--- |
+| **The Core** | **Inner Frame** | Kernel utama yang menangani routing, auth, dan database sinkronisasi. |
+| **Modules** | **Striker Packs** | Unit fungsional (Inventory, Sales, HR) yang bisa di-install/uninstall. |
+| **Hooks** | **Hardpoints** | Titik injeksi kode di mana modul eksternal dapat terhubung ke Core. |
+| **Registry** | **Tactical HUD** | Sistem monitoring untuk melihat modul apa saja yang sedang aktif. |
 
 ---
 
 ## 🚀 Quick Start (Deployment Sequence)
 
-Nyalakan reaktor dan jalankan *Inner Frame* di mesin lokal Anda:
+Ikuti langkah berikut untuk menyalakan Reaktor Fusion di mesin lokal Anda:
 
-### 1. Masuk ke Hangar
-```bash
-git clone https://github.com/USERNAME_GITHUB_KAMU/gundam-os.git
-cd gundam-os
-```
+1. **Clone the Hangar:**
+   ```bash
+   git clone https://github.com/username/gundam-os.git
+   cd gundam-os
+   ```
 
-### 2. Isi Bahan Bakar (Install Dependencies)
-```bash
-npm install
-```
+2. **Fueling (Install Dependencies):**
+   ```bash
+   npm install
+   ```
 
-### 3. Power On (Run System)
-```bash
-npm run dev
-```
 
-Sistem akan berjalan di `http://localhost:3000`.
-Untuk melihat modul pertama yang sudah aktif, akses endpoint senjata pertama kita: `http://localhost:3000/api/appointment/slots`
+3. **Power On (Run System):**
+   ```bash
+   npm run dev
+   ```
+
+
+4. **Verify Systems:**
+   Buka `http://localhost:3000/` untuk melihat Base System Radar yang "Online", atau cek status senjata di `http://localhost:3000/api/beam-rifle/status`.
 
 ---
 
 ## 🛠️ How to Build a Module (Crafting New Parts)
-Membuat senjata baru sangat mudah. Modul hanya perlu mengikuti kontrak (Interface) dari `GundamModule`:
+
+Anda ingin berkontribusi senjata atau perlengkapan baru? Cukup buat folder baru di `/src/modules/` dengan struktur berikut:
 
 ```typescript
-import { Application } from 'express';
+// src/modules/my-new-weapon/index.ts
+import { Express } from 'express';
 import { GundamModule } from '../../core/types';
 
-export const MyNewModule: GundamModule = {
+export const MyModule: GundamModule = {
   name: 'Gatling-Gun-Reporting',
   version: '1.0.0',
-  init: (app: Application) => {
-    app.get('/api/reports', (req, res) => {
-      res.json({ status: 'Reporting Module Online!' });
+  install: (app: Express) => {
+    // Inject your business logic here
+    app.get('/api/gatling-gun/status', (req, res) => {
+        res.json({ status: 'Locked and Loaded!' });
     });
   }
-};
+}
 ```
-
-Daftarkan modul tersebut di `src/main.ts`, dan sistem akan langsung mengintegrasikannya!
 
 ---
 
 ## 📡 Roadmap (The Project Evolution)
-- [x] **Phase 1: RX-78-0** - Stabilisasi Inner Frame & Module Loader.
-- [x] **Phase 1.5** - Pemasangan modul pembuktian pertama (Appointment Module).
-- [ ] **Phase 2: The Core Block** - Integrasi Database ORM (Prisma/TypeORM) untuk persistensi data cross-module.
-- [ ] **Phase 3: Psycoframe** - Sistem Role-Based Access Control (RBAC) dan Autentikasi.
+
+* [x] **Phase 1: RX-78-0 (Current)** - Stabilisasi Inner Frame & Module Loader.
+* [ ] **Phase 2: Zeta Project** - Implementasi Hot-Swap (Ganti modul tanpa restart).
+* [ ] **Phase 3: Nu Gundam** - Integrasi AI (Psychoframes) untuk prediksi stok & data.
+* [ ] **Phase 4: Global Network** - Support untuk Multi-Tenant (Multi-Pilot).
 
 ---
 
-Maintained with 💻 & ☕ Prepare for the next sortie! 🚀
+## 🤝 Contributing (Join the Federation)
+
+Project ini bersifat **Open Source** dan **Free**. Jika Anda seorang "Mechanic" (Programmer) yang ingin menyumbangkan ide atau modul:
+
+1. Fork repository ini.
+2. Buat branch "Weapon" Anda (`git checkout -b feature/beam-saber`).
+3. Push & Open Pull Request.
+
+---
+
+## 🛡️ License
+
+Didistribusikan di bawah Lisensi MIT. Bebas digunakan, dimodifikasi, dan disebarkan untuk kemajuan umat manusia di Bumi dan Koloni Luar Angkasa.
+
+---
+
+**Maintained by [Your Name/GitHub Username]** *Prepare for the next sortie!* 🚀
