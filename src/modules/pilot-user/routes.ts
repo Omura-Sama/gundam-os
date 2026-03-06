@@ -10,7 +10,7 @@ const SECRET_KEY = process.env.JWT_SECRET || 'gundam_os_secret_key_123'; // Repl
 // [CREATE] Register a new Pilot (User)
 router.post('/register', async (req: Request, res: Response): Promise<void> => {
     try {
-        const { email, name, password, role } = req.body;
+        const { email, password, isSuperAdmin } = req.body;
 
         if (!email || !password) {
             res.status(400).json({ message: 'Email and password are required' });
@@ -22,15 +22,14 @@ router.post('/register', async (req: Request, res: Response): Promise<void> => {
         const newUser = await prisma.coreUser.create({
             data: {
                 email,
-                name,
                 password: hashedPassword,
-                role: role || 'STAFF'
+                isSuperAdmin: isSuperAdmin || false
             }
         });
 
         res.status(201).json({
             message: 'Pilot registered successfully',
-            user: { id: newUser.id, email: newUser.email, role: newUser.role }
+            user: { id: newUser.id, email: newUser.email, isSuperAdmin: newUser.isSuperAdmin }
         });
     } catch (error: any) {
         if (error.code === 'P2002') {
@@ -62,13 +61,13 @@ router.post('/login', async (req: Request, res: Response): Promise<void> => {
         const payload = {
             id: user.id,
             email: user.email,
-            role: user.role,
+            isSuperAdmin: user.isSuperAdmin,
             iat: Math.floor(Date.now() / 1000),
             exp: Math.floor(Date.now() / 1000) + (60 * 60 * 24 * 7) // 7 days expiration
         };
         const token = jwt.encode(payload, SECRET_KEY);
 
-        res.json({ message: 'Login successful', token, role: user.role });
+        res.json({ message: 'Login successful', token, isSuperAdmin: user.isSuperAdmin });
     } catch (error: any) {
         res.status(500).json({ message: 'Internal Server Error', error: error.message });
     }
@@ -77,7 +76,7 @@ router.post('/login', async (req: Request, res: Response): Promise<void> => {
 // [READ] View all Pilots (Requires Auth / Admin - TBD middleware)
 router.get('/', async (req: Request, res: Response): Promise<void> => {
     const users = await prisma.coreUser.findMany({
-        select: { id: true, email: true, name: true, role: true, createdAt: true }
+        select: { id: true, email: true, isSuperAdmin: true, createdAt: true }
     });
     res.json(users);
 });

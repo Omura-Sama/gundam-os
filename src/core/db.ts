@@ -1,8 +1,8 @@
 import { PrismaClient } from '@prisma/client';
 
-// Singleton Prisma instance for the entire application
-const prisma = new PrismaClient({
-    log: process.env.NODE_ENV === 'development' ? ['query', 'error', 'warn'] : ['error'],
-});
+// Mencegah multiple instance Prisma saat development (hot-reload)
+const globalForPrisma = global as unknown as { prisma: PrismaClient };
 
-export default prisma;
+export const db = globalForPrisma.prisma || new PrismaClient();
+
+if (process.env.NODE_ENV !== 'production') globalForPrisma.prisma = db;

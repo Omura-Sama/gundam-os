@@ -10,7 +10,7 @@ router.get('/status', (req: Request, res: Response) => {
 
 // Endpoint untuk tembakan (Protected Action)
 router.post('/fire', AuthGuard, (req: AuthRequest, res: Response) => {
-    const pilotName = req.user?.name || req.user?.email || 'Unknown Pilot';
+    const pilotName = req.user?.email || 'Unknown Pilot';
     res.json({
         action: 'PEW PEW PEW!',
         target: 'Destroyed',

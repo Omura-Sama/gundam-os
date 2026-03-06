@@ -1,9 +1,3 @@
-// This is your Prisma schema file,
-// learn more about it in the docs: https://pris.ly/d/prisma-schema
-
-// Looking for ways to speed up your queries, or scale easily with your serverless or edge functions?
-// Try Prisma Accelerate: https://pris.ly/cli/accelerate-init
-
 generator client {
   provider = "prisma-client-js"
 }
@@ -13,43 +7,42 @@ datasource db {
   url      = env("DATABASE_URL")
 }
 
+// --- INNER FRAME (CORE) ---
 model CoreUser {
-  id        Int      @id @default(autoincrement())
-  email     String   @unique
-  name      String?
-  password  String
-  role      String   @default("STAFF")
-  createdAt DateTime @default(now())
-  updatedAt DateTime @updatedAt
+  id            Int      @id @default(autoincrement())
+  email         String   @unique
+  password      String
+  isSuperAdmin  Boolean  @default(false) // Pilot Pusat Kontrol
+  createdAt     DateTime @default(now())
+  updatedAt     DateTime @updatedAt
   
-  // Relasi ke tabel hybrid SystemRecord
-  records   SystemRecord[]
+  // Relasi ke Modul (Satu user bisa punya banyak peran)
+  employeeData  HrEmployee?
+  patientData   MedicalRecord?
 
   @@map("core_users")
 }
 
-// --- HYBRID ARMOR ENTITY ---
-// Model polymorphic untuk menyimpan data dari berbagai macam modul (Striker Packs)
-model SystemRecord {
-  id          String   @id @default(uuid())
+// --- STRIKER PACK: HR MODULE (BACK OFFICE) ---
+model HrEmployee {
+  id           Int      @id @default(autoincrement())
+  coreUserId   Int      @unique
+  employeeCode String   @unique // Misal: NIP-2026-001
+  department   String
   
-  // Hardpoints (Identifikasi Modul & Tipe Data)
-  moduleName  String   // ex: 'BeamRifle', 'PatientData', 'Inventory'
-  recordType  String   // ex: 'Transaction', 'MasterItem', 'Profile'
-  
-  // Ownership
-  ownerId     Int?     // Mengacu ke CoreUser.id (optional jika data sistem)
-  owner       CoreUser? @relation(fields: [ownerId], references: [id])
-  
-  // Psycho-Frame (Data Fleksibel JSON)
-  payload     Json
-  
-  // Timestamps
-  createdAt   DateTime @default(now())
-  updatedAt   DateTime @updatedAt
+  user         CoreUser @relation(fields: [coreUserId], references: [id], onDelete: Cascade)
 
-  // Indexing untuk mempercepat pencarian spesifik per-modul
-  @@index([moduleName, recordType])
-  @@index([ownerId])
-  @@map("system_records")
+  @@map("mod_hr_employees")
+}
+
+// --- STRIKER PACK: CLINIC MODULE (FRONT OFFICE) ---
+model MedicalRecord {
+  id           Int      @id @default(autoincrement())
+  coreUserId   Int      @unique
+  rmNumber     String   @unique // Misal: RM-99812
+  bloodType    String?
+  
+  user         CoreUser @relation(fields: [coreUserId], references: [id], onDelete: Cascade)
+
+  @@map("mod_medical_records")
 }
