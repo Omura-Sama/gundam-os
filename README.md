@@ -98,4 +98,4 @@ Didistribusikan di bawah Lisensi MIT. Bebas digunakan, dimodifikasi, dan disebar
 
 ---
 
-**Maintained by [Your Name/GitHub Username]** *Prepare for the next sortie!* 🚀
+**Maintained by [Krishna Umaro/ Omura-Sama]** *Prepare for the next sortie!* 🚀
