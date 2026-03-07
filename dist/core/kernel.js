@@ -108,6 +108,8 @@ class GundamKernel {
                 name: mod.name,
                 version: mod.version,
                 description: mod.description,
+                category: mod.category,
+                weight: mod.weight,
                 status: 'Active 🟢'
             });
         });
@@ -116,6 +118,8 @@ class GundamKernel {
                 name: mod.name,
                 version: mod.version,
                 description: mod.description,
+                category: mod.category,
+                weight: mod.weight,
                 status: 'Available 🟡'
             });
         });

@@ -1,10 +1,28 @@
 <template>
   <v-container fluid class="pa-6">
+    <!-- AI Warning Overlay -->
+    <v-snackbar
+      v-model="aiWarning"
+      color="error"
+      elevation="24"
+      location="top"
+      timeout="-1"
+      class="tactical-snackbar"
+    >
+      <div class="d-flex align-center font-weight-bold text-subtitle-1">
+        <v-icon class="mr-3 blink-icon">mdi-alert-decagram</v-icon>
+        WARNING: MISSION PARAMETERS ESTABLISHED. ARMOR AND WEAPONRY SETUP REQUIRED.
+      </div>
+      <template v-slot:actions>
+        <v-btn color="white" variant="text" @click="aiWarning = false">ACKNOWLEDGE</v-btn>
+      </template>
+    </v-snackbar>
+
     <v-row>
       <v-col cols="12">
         <h1 class="text-primary font-weight-bold tactical-header">
           <v-icon size="x-large" color="primary" class="mr-3">mdi-monitor-dashboard</v-icon>
-          TACTICAL HUD (PHASE 9)
+          TACTICAL HUD (PHASE 10)
         </h1>
         <p class="text-secondary subtitle-1">Gundam-OS Core Engine Status: Online</p>
       </v-col>
@@ -82,6 +100,13 @@
               </template>
               <v-list-item-title class="font-weight-bold">{{ mod.name }}</v-list-item-title>
               <v-list-item-subtitle class="text-caption mt-1">{{ mod.description || 'No description available.' }}</v-list-item-subtitle>
+              
+              <!-- Badges for Active Modules if data exists -->
+              <div v-if="mod.category || mod.weight" class="mt-2 mb-1">
+                <v-chip v-if="mod.category" color="info" size="x-small" variant="outlined" class="mr-2">{{ mod.category }}</v-chip>
+                <v-chip v-if="mod.weight" :color="getWeightColor(mod.weight)" size="x-small" variant="flat">{{ mod.weight }} Scale</v-chip>
+              </div>
+
               <div class="text-caption text-secondary mt-1">Vers: {{ mod.version }}</div>
               
               <template v-slot:append>
@@ -98,39 +123,71 @@
         </v-card>
       </v-col>
 
-      <!-- Available / Discovered Modules Card -->
+      <!-- Holographic Armament Config Wizard -->
       <v-col cols="12" md="6">
-        <v-card class="tactical-card elevation-6 h-100" style="border-color: rgba(245, 176, 65, 0.4) !important;">
+        <v-card class="tactical-card elevation-6 h-100 holographic-border">
           <v-card-title class="text-warning font-weight-bold">
-            <v-icon left color="warning" class="mr-2">mdi-magnify-scan</v-icon>
-            Signal Detected: Uninstalled ({{ availablePacks.length }})
+            <v-icon left color="warning" class="mr-2">mdi-cogs</v-icon>
+            Holographic Armament Setup ({{ availablePacks.length }})
           </v-card-title>
-          <v-divider></v-divider>
+          <v-divider color="warning"></v-divider>
+          
+          <v-card-text v-if="availablePacks.length > 0" class="text-caption text-warning mb-2">
+            Select ERP modules based on your current operational scale to prevent system encumbrance.
+          </v-card-text>
+
           <v-list bg-color="transparent" theme="dark">
-            <v-list-item v-for="mod in availablePacks" :key="mod.name" class="py-3">
+            <v-list-item v-for="mod in availablePacks" :key="mod.name" class="py-4 item-holographic">
               <template v-slot:prepend>
-                <v-icon color="warning">mdi-package-variant</v-icon>
+                <v-icon color="warning" size="large">mdi-hexagon-outline</v-icon>
               </template>
-              <v-list-item-title class="font-weight-bold text-warning">{{ mod.name }}</v-list-item-title>
-              <v-list-item-subtitle class="text-caption mt-1">{{ mod.description || 'Unknown system architecture detected.' }}</v-list-item-subtitle>
-              <div class="text-caption text-secondary mt-1">Vers: {{ mod.version }}</div>
+              
+              <v-list-item-title class="font-weight-bold text-warning text-h6">{{ mod.name }}</v-list-item-title>
+              
+              <!-- Scale and Category Badges -->
+              <div class="mt-2 mb-2 d-flex align-center flex-wrap gap-2">
+                <v-chip 
+                  color="warning" 
+                  size="small" 
+                  variant="outlined" 
+                  prepend-icon="mdi-tag-outline"
+                >
+                  {{ mod.category || 'Uncategorized' }}
+                </v-chip>
+
+                <v-chip 
+                  :color="getWeightColor(mod.weight || 'Medium')" 
+                  size="small" 
+                  variant="flat"
+                  prepend-icon="mdi-weight"
+                >
+                  {{ mod.weight || 'Medium' }} Scale
+                </v-chip>
+              </div>
+
+              <v-list-item-subtitle class="text-body-2 mt-1 text-white opacity-80" style="white-space: normal;">
+                {{ mod.description || 'Unknown system architecture detected.' }}
+              </v-list-item-subtitle>
               
               <template v-slot:append>
                 <v-btn 
                   color="warning" 
-                  variant="outlined" 
-                  size="small" 
-                  class="mt-2"
+                  variant="flat" 
+                  size="default" 
+                  class="mt-2 font-weight-bold equip-btn"
                   @click="installModule(mod.name)"
                   :loading="installingModule === mod.name"
                 >
-                  <v-icon left size="small" class="mr-1">mdi-download</v-icon> INSTALL
+                  <v-icon left size="small" class="mr-1">mdi-plus-box-outline</v-icon> EQUIP
                 </v-btn>
               </template>
             </v-list-item>
 
             <v-list-item v-if="availablePacks.length === 0 && !loading">
-              <v-list-item-title class="text-secondary text-center py-4">All detected Striker Packs are currently equipped.</v-list-item-title>
+              <v-list-item-title class="text-success text-center py-6 font-weight-bold">
+                <v-icon color="success" size="large" class="mb-2 d-block mx-auto">mdi-check-decagram</v-icon>
+                All Systems Nominal. Arsenal Fully Equipped.
+              </v-list-item-title>
             </v-list-item>
           </v-list>
         </v-card>
@@ -150,6 +207,8 @@ interface ModuleDetail {
   name: string;
   version: string;
   description?: string;
+  category?: string;
+  weight?: string;
   status: string;
 }
 
@@ -168,6 +227,7 @@ const allModules = ref<ModuleDetail[]>([]);
 const healthData = ref<TelemetryData | null>(null);
 const loading = ref(true);
 const installingModule = ref<string | null>(null);
+const aiWarning = ref(false);
 let pollingInterval: NodeJS.Timeout;
 
 const installedPacks = computed(() => allModules.value.filter(m => m.status.includes('Active')));
@@ -199,6 +259,13 @@ const getMemColor = (percent: number) => {
   return 'error';
 };
 
+const getWeightColor = (weight: string) => {
+  if (weight === 'Light') return 'success';
+  if (weight === 'Medium') return 'info';
+  if (weight === 'Heavy') return 'error';
+  return 'secondary';
+};
+
 const logout = () => {
   localStorage.removeItem('gundam_jwt');
   router.push('/login');
@@ -221,6 +288,12 @@ const fetchModules = async () => {
       headers: { Authorization: `Bearer ${token}` }
     });
     allModules.value = response.data.data;
+    
+    // AI Warning Trigger
+    if (availablePacks.value.length > 0) {
+      aiWarning.value = true;
+    }
+
   } catch (error: any) {
     if (error.response?.status === 401) logout();
   } finally {
@@ -238,7 +311,7 @@ const installModule = async (moduleName: string) => {
     await fetchModules();
   } catch (error) {
     console.error("Failed to install module:", error);
-    alert(`Failed to activate ${moduleName}`);
+    alert(`Failed to equip ${moduleName}`);
   } finally {
     installingModule.value = null;
   }
@@ -271,13 +344,42 @@ onUnmounted(() => {
   transition: all 0.3s ease;
 }
 
+.holographic-border {
+  border: 2px solid rgba(245, 176, 65, 0.6) !important;
+  box-shadow: inset 0 0 20px rgba(245, 176, 65, 0.1), 0 0 15px rgba(245, 176, 65, 0.2) !important;
+}
+
+.item-holographic {
+  background: linear-gradient(90deg, rgba(245, 176, 65, 0.05) 0%, transparent 100%);
+  border-left: 3px solid #F5B041;
+  margin-bottom: 12px;
+  border-radius: 0 8px 8px 0;
+}
+
+.equip-btn {
+  letter-spacing: 1.5px;
+}
+
 .pulse-chip {
   animation: pulse 2s infinite;
+}
+
+.blink-icon {
+  animation: blink 1s infinite alternate;
 }
 
 @keyframes pulse {
   0% { box-shadow: 0 0 0 0 rgba(0, 232, 143, 0.4); }
   70% { box-shadow: 0 0 0 6px rgba(0, 232, 143, 0); }
   100% { box-shadow: 0 0 0 0 rgba(0, 232, 143, 0); }
+}
+
+@keyframes blink {
+  0% { opacity: 1; text-shadow: 0 0 10px #FF2A2A; }
+  100% { opacity: 0.4; text-shadow: none; }
+}
+
+.gap-2 {
+  gap: 8px;
 }
 </style>

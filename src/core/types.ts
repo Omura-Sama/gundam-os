@@ -4,6 +4,8 @@ export interface GundamModule {
     name: string;
     version: string;
     description?: string;
+    category?: string;
+    weight?: 'Light' | 'Medium' | 'Heavy';
     status?: 'Active' | 'Available' | 'Error';
     autoStart?: boolean;
     install: (app: Express) => void;

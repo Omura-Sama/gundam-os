@@ -75,13 +75,15 @@ export class GundamKernel {
     }
 
     getModuleDetails() {
-        const details: Array<{ name: string; version: string; description?: string; status: string }> = [];
+        const details: Array<{ name: string; version: string; description?: string; category?: string; weight?: string; status: string }> = [];
 
         this.installedModules.forEach((mod) => {
             details.push({
                 name: mod.name,
                 version: mod.version,
                 description: mod.description,
+                category: mod.category,
+                weight: mod.weight,
                 status: 'Active 🟢'
             });
         });
@@ -91,6 +93,8 @@ export class GundamKernel {
                 name: mod.name,
                 version: mod.version,
                 description: mod.description,
+                category: mod.category,
+                weight: mod.weight,
                 status: 'Available 🟡'
             });
         });
