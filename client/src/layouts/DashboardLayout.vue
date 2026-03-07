@@ -41,7 +41,7 @@
     </v-navigation-drawer>
 
     <!-- Main Content Rendering Area (Nested Routes) -->
-    <v-main>
+    <v-main class="tactical-main">
       <router-view></router-view>
     </v-main>
   </v-layout>
@@ -122,5 +122,10 @@ onMounted(() => {
 .tactical-sidebar {
   border-right: 1px solid rgba(0, 232, 143, 0.2) !important;
   backdrop-filter: blur(10px);
+}
+
+.tactical-main {
+  height: 100vh;
+  overflow-y: auto;
 }
 </style>
