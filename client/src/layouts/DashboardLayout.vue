@@ -27,7 +27,7 @@
           :key="mod.name"
           :prepend-icon="getModuleIcon(mod.name)"
           :title="mod.name"
-          :to="`/module/${mod.name.toLowerCase()}`"
+          :to="getModulePath(mod.name)"
         ></v-list-item>
       </v-list>
       
@@ -69,9 +69,19 @@ const installedPacks = computed(() => {
 
 const getModuleIcon = (name: string) => {
   if (name.toLowerCase().includes('pilot')) return 'mdi-account-group';
-  if (name.toLowerCase().includes('rifle')) return 'mdi-pistol';
-  if (name.toLowerCase().includes('shield')) return 'mdi-shield-check';
+  if (name.toLowerCase().includes('rifle') || name.toLowerCase().includes('sales')) return 'mdi-pistol';
+  if (name.toLowerCase().includes('shield') || name.toLowerCase().includes('armor')) return 'mdi-shield-check';
+  if (name.toLowerCase().includes('finance')) return 'mdi-finance';
+  if (name.toLowerCase().includes('front')) return 'mdi-monitor-eye';
+  if (name.toLowerCase().includes('warehouse')) return 'mdi-warehouse';
   return 'mdi-cube-outline';
+}
+
+const getModulePath = (name: string) => {
+  const baseName = name.split('(')[0].trim().toLowerCase();
+  if (baseName.includes('pilot')) return '/module/pilot-roster';
+  if (baseName.includes('sales')) return '/module/sales-procurement';
+  return `/module/${baseName.replace(/[^a-z0-9]+/g, '-')}`;
 }
 
 const logout = () => {

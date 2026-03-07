@@ -4,6 +4,7 @@ const DashboardLayout = () => import('../layouts/DashboardLayout.vue');
 const HomeView = () => import('../views/HomeView.vue');
 const LoginView = () => import('../views/LoginView.vue');
 const PilotRosterView = () => import('../views/modules/PilotRosterView.vue');
+const SalesProcurementView = () => import('../views/modules/SalesProcurementView.vue');
 
 const router = createRouter({
     history: createWebHistory(import.meta.env.BASE_URL),
@@ -27,6 +28,16 @@ const router = createRouter({
                     path: 'module/pilot-roster',
                     name: 'pilot-roster',
                     component: PilotRosterView
+                },
+                {
+                    path: 'module/sales-procurement',
+                    name: 'sales-procurement',
+                    component: SalesProcurementView
+                },
+                {
+                    path: 'module/:id',
+                    name: 'module-dynamic',
+                    component: () => import('../views/modules/ModuleTemplateView.vue')
                 }
             ]
         }
