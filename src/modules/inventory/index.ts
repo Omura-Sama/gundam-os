@@ -2,9 +2,9 @@ import { Express } from 'express';
 import { GundamModule } from '../../core/types';
 
 export const InventoryModule: GundamModule = {
-    name: "Inventory (Ammo Supply Route)",
+    name: "Warehouse (Ammunition & Supply Logistics)",
     version: "1.0.0",
-    description: "Warehouse and logistics tracking for medical/business ammunition.",
+    description: "Melacak sisa peluru (stok barak), amunisi, dan rantai pasok. Jika peluru habis, Gundam tidak bisa menyerang.",
     category: "Logistics",
     weight: "Heavy",
     installMessage: "Ammunition Supply Route Connected.",

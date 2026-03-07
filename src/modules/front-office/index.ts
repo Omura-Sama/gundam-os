@@ -2,9 +2,9 @@ import { Express } from 'express';
 import { GundamModule } from '../../core/types';
 
 export const FrontOfficeModule: GundamModule = {
-    name: "Front Office (Optical Sensor Array)",
+    name: "Front Office (Main Camera & Sensor Array)",
     version: "1.0.0",
-    description: "Core reception and triage operations system.",
+    description: "Mendeteksi leads, mengawasi pergerakan musuh, dan memindai medan tempur operasional bisnis (CRM & Interaksi Pasien).",
     category: "Logistics",
     weight: "Medium",
     installMessage: "Optical Sensor Array Installed.",
