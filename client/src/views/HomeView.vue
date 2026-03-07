@@ -1,5 +1,6 @@
 <template>
   <v-container fluid class="pa-6">
+    
     <!-- AI Warning Overlay -->
     <v-snackbar
       v-model="aiWarning"
@@ -24,11 +25,31 @@
       </template>
     </v-snackbar>
 
+    <!-- Robotic Success Snackbar -->
+    <v-snackbar
+      v-model="showSuccessSnackbar"
+      color="success"
+      elevation="24"
+      location="bottom right"
+      :timeout="3000"
+    >
+      <div class="d-flex align-center font-weight-bold">
+        <v-icon class="mr-2 blink-icon">mdi-check-circle-outline</v-icon>
+        {{ successMessage }}
+      </div>
+    </v-snackbar>
+
     <v-row>
       <v-col cols="12">
-        <h1 class="text-primary font-weight-bold tactical-header">
-          <v-icon size="x-large" color="primary" class="mr-3">mdi-monitor-dashboard</v-icon>
-          TACTICAL HUD (PHASE 10)
+        <!-- Dynamic Header transitioning to Green Go-Live -->
+        <h1 
+          class="font-weight-bold tactical-header" 
+          :class="availablePacks.length === 0 && !loading ? 'text-success' : 'text-primary'"
+        >
+          <v-icon size="x-large" :color="availablePacks.length === 0 && !loading ? 'success' : 'primary'" class="mr-3">
+            {{ availablePacks.length === 0 && !loading ? 'mdi-rocket-launch' : 'mdi-monitor-dashboard' }}
+          </v-icon>
+          {{ availablePacks.length === 0 && !loading ? 'ALL SYSTEMS GREEN. GUNDAM-OS LAUNCHING!' : 'TACTICAL HUD (PHASE 11)' }}
         </h1>
         <p class="text-secondary subtitle-1">Gundam-OS Core Engine Status: Online</p>
       </v-col>
@@ -234,6 +255,8 @@ const healthData = ref<TelemetryData | null>(null);
 const loading = ref(true);
 const installingModule = ref<string | null>(null);
 const aiWarning = ref(false);
+const showSuccessSnackbar = ref(false);
+const successMessage = ref('');
 let pollingInterval: NodeJS.Timeout;
 
 const installedPacks = computed(() => allModules.value.filter(m => m.status.includes('Active')));
@@ -298,6 +321,8 @@ const fetchModules = async () => {
     // AI Warning Trigger
     if (availablePacks.value.length > 0) {
       aiWarning.value = true;
+    } else {
+      aiWarning.value = false; // Turn off if all systems green
     }
 
   } catch (error: any) {
@@ -311,14 +336,19 @@ const installModule = async (moduleName: string) => {
   installingModule.value = moduleName;
   const token = localStorage.getItem('gundam_jwt');
   try {
-    await axios.post('/api/core/modules/install', { moduleName }, {
+    const res = await axios.post('/api/core/modules/install', { moduleName }, {
       headers: { Authorization: `Bearer ${token}` }
     });
-    await fetchModules();
+    // Simulate Robotic Mounting delay
+    setTimeout(async () => {
+      await fetchModules();
+      installingModule.value = null;
+      successMessage.value = res.data.installMessage || `${moduleName} Mounted Successfully`;
+      showSuccessSnackbar.value = true;
+    }, 1500);
   } catch (error) {
     console.error("Failed to install module:", error);
     alert(`Failed to equip ${moduleName}`);
-  } finally {
     installingModule.value = null;
   }
 }

@@ -50,10 +50,13 @@ export function CoreSystemAPI(kernel: GundamKernel) {
             return res.status(400).json({ message: "Module name required." });
         }
 
-        const success = kernel.activateModule(moduleName);
+        const result = kernel.activateModule(moduleName);
 
-        if (success) {
-            res.json({ message: `Striker Pack ${moduleName} activated successfully!` });
+        if (result.success) {
+            res.json({
+                message: `Striker Pack ${moduleName} activated successfully!`,
+                installMessage: result.installMessage
+            });
         } else {
             res.status(404).json({ message: `Module ${moduleName} not found or already active.` });
         }

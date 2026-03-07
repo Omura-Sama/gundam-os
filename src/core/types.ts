@@ -8,5 +8,6 @@ export interface GundamModule {
     weight?: 'Light' | 'Medium' | 'Heavy';
     status?: 'Active' | 'Available' | 'Error';
     autoStart?: boolean;
+    installMessage?: string;
     install: (app: Express) => void;
 }

@@ -60,14 +60,14 @@ export class GundamKernel {
         }
     }
 
-    activateModule(name: string): boolean {
+    activateModule(name: string): { success: boolean; installMessage?: string } {
         if (!this.appInstance) throw new Error("Core system not running.");
 
         const modToInstall = this.availableModules.get(name);
-        if (!modToInstall) return false;
+        if (!modToInstall) return { success: false };
 
         this.register(modToInstall, this.appInstance);
-        return true;
+        return { success: true, installMessage: modToInstall.installMessage };
     }
 
     listModules() {
