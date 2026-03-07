@@ -8,13 +8,19 @@
       location="top"
       timeout="-1"
       class="tactical-snackbar"
+      multi-line
     >
-      <div class="d-flex align-center font-weight-bold text-subtitle-1">
-        <v-icon class="mr-3 blink-icon">mdi-alert-decagram</v-icon>
-        WARNING: MISSION PARAMETERS ESTABLISHED. ARMOR AND WEAPONRY SETUP REQUIRED.
+      <div class="d-flex flex-column">
+        <div class="d-flex align-center font-weight-bold text-subtitle-1 mb-1">
+          <v-icon class="mr-3 blink-icon">mdi-alert-decagram</v-icon>
+          WARNING: MISSION PARAMETERS ESTABLISHED. ARMOR AND WEAPONRY SETUP REQUIRED.
+        </div>
+        <div class="text-caption ml-9" style="opacity: 0.9;">
+          OS Core mendeteksi ada Striker Packs (Modul ERP) yang tersedia di persenjataan namun belum dipasang. Kemampuan operasi Anda akan terbatas. Evaluasi kebutuhan perusahaan Anda pada menu Holographic Armament Setup di bawah sebelum memulai misi.
+        </div>
       </div>
       <template v-slot:actions>
-        <v-btn color="white" variant="elevated" class="text-error font-weight-bold" @click="aiWarning = false">ACKNOWLEDGE</v-btn>
+        <v-btn color="white" variant="elevated" class="text-error font-weight-bold mt-2" @click="aiWarning = false">ACKNOWLEDGE</v-btn>
       </template>
     </v-snackbar>
 
