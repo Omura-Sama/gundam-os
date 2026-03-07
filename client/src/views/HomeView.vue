@@ -174,7 +174,7 @@
                   color="warning" 
                   variant="flat" 
                   size="default" 
-                  class="mt-2 font-weight-bold equip-btn"
+                  class="mt-2 font-weight-bold equip-btn text-black"
                   @click="installModule(mod.name)"
                   :loading="installingModule === mod.name"
                 >
