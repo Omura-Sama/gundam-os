@@ -21,9 +21,9 @@
       <v-list density="compact" nav>
         <v-list-item prepend-icon="mdi-radar" title="Core Dashboard" value="dashboard"></v-list-item>
         
-        <!-- Dynamic Modules Rendered Here -->
+        <!-- Only show Active Modules in Sidebar -->
         <v-list-item
-          v-for="mod in activeModules"
+          v-for="mod in installedPacks"
           :key="mod.name"
           :prepend-icon="getModuleIcon(mod.name)"
           :title="mod.name"
@@ -47,7 +47,7 @@
           <v-col cols="12">
             <h1 class="text-primary font-weight-bold tactical-header">
               <v-icon size="x-large" color="primary" class="mr-3">mdi-monitor-dashboard</v-icon>
-              TACTICAL HUD (PHASE 7)
+              TACTICAL HUD (PHASE 8)
             </h1>
             <p class="text-secondary subtitle-1">Gundam-OS Core Engine Status: Online</p>
           </v-col>
@@ -57,18 +57,20 @@
           <!-- Active Modules Radar Card -->
           <v-col cols="12" md="6">
             <v-card class="tactical-card elevation-6">
-              <v-card-title class="text-secondary font-weight-bold">
-                <v-icon left color="secondary" class="mr-2">mdi-radar</v-icon>
-                Active Striker Packs ({{ activeModules.length }})
+              <v-card-title class="text-primary font-weight-bold">
+                <v-icon left color="primary" class="mr-2">mdi-radar</v-icon>
+                Active Striker Packs ({{ installedPacks.length }})
               </v-card-title>
               <v-divider></v-divider>
               <v-list bg-color="transparent" theme="dark">
-                <v-list-item v-for="mod in activeModules" :key="mod.name" class="py-3">
+                <v-list-item v-for="mod in installedPacks" :key="mod.name" class="py-3">
                   <template v-slot:prepend>
                     <v-icon color="primary">mdi-package-variant-closed</v-icon>
                   </template>
                   <v-list-item-title class="font-weight-bold">{{ mod.name }}</v-list-item-title>
-                  <v-list-item-subtitle>Vers: {{ mod.version }}</v-list-item-subtitle>
+                  <v-list-item-subtitle class="text-caption mt-1">{{ mod.description || 'No description available.' }}</v-list-item-subtitle>
+                  <div class="text-caption text-secondary mt-1">Vers: {{ mod.version }}</div>
+                  
                   <template v-slot:append>
                     <v-chip color="success" size="small" variant="elevated" class="pulse-chip">
                       {{ mod.status.replace('🟢', '') }}
@@ -76,32 +78,48 @@
                   </template>
                 </v-list-item>
                 
-                <v-list-item v-if="activeModules.length === 0 && !loading">
-                  <v-list-item-title class="text-warning">No Striker Packs Detected</v-list-item-title>
+                <v-list-item v-if="installedPacks.length === 0 && !loading">
+                  <v-list-item-title class="text-warning">No Active Striker Packs Detected</v-list-item-title>
                 </v-list-item>
               </v-list>
             </v-card>
           </v-col>
 
-          <!-- System Matrix (Placeholder) -->
+          <!-- Available / Discovered Modules Card -->
           <v-col cols="12" md="6">
-            <v-card class="tactical-card elevation-6">
-              <v-card-title class="text-primary font-weight-bold">
-                <v-icon left color="primary" class="mr-2">mdi-chart-bar</v-icon>
-                System Telemetry
+            <v-card class="tactical-card elevation-6" style="border-color: rgba(245, 176, 65, 0.4) !important;">
+              <v-card-title class="text-warning font-weight-bold">
+                <v-icon left color="warning" class="mr-2">mdi-magnify-scan</v-icon>
+                Signal Detected: Uninstalled Modules ({{ availablePacks.length }})
               </v-card-title>
               <v-divider></v-divider>
-              <v-card-text class="d-flex justify-center align-center" style="height: 200px">
-                <v-progress-circular
-                  :size="120"
-                  :width="8"
-                  color="primary"
-                  indeterminate
-                ></v-progress-circular>
-                <div class="position-absolute text-center">
-                  <span class="text-h5 font-weight-bold text-secondary">SYNC</span>
-                </div>
-              </v-card-text>
+              <v-list bg-color="transparent" theme="dark">
+                <v-list-item v-for="mod in availablePacks" :key="mod.name" class="py-3">
+                  <template v-slot:prepend>
+                    <v-icon color="warning">mdi-package-variant</v-icon>
+                  </template>
+                  <v-list-item-title class="font-weight-bold text-warning">{{ mod.name }}</v-list-item-title>
+                  <v-list-item-subtitle class="text-caption mt-1">{{ mod.description || 'Unknown system architecture detected.' }}</v-list-item-subtitle>
+                  <div class="text-caption text-secondary mt-1">Vers: {{ mod.version }}</div>
+                  
+                  <template v-slot:append>
+                    <v-btn 
+                      color="warning" 
+                      variant="outlined" 
+                      size="small" 
+                      class="mt-2"
+                      @click="installModule(mod.name)"
+                      :loading="installingModule === mod.name"
+                    >
+                      <v-icon left size="small" class="mr-1">mdi-download</v-icon> INSTALL
+                    </v-btn>
+                  </template>
+                </v-list-item>
+
+                <v-list-item v-if="availablePacks.length === 0 && !loading">
+                  <v-list-item-title class="text-secondary text-center py-4">All detected Striker Packs are currently equipped.</v-list-item-title>
+                </v-list-item>
+              </v-list>
             </v-card>
           </v-col>
         </v-row>
@@ -111,18 +129,37 @@
 </template>
 
 <script setup lang="ts">
-import { ref, onMounted } from 'vue';
+import { ref, onMounted, computed } from 'vue';
 import { useRouter } from 'vue-router';
 import axios from 'axios';
 
 const router = useRouter();
-const activeModules = ref<Array<{name: string, version: string, status: string}>>([]);
+
+interface ModuleDetail {
+  name: string;
+  version: string;
+  description?: string;
+  status: string;
+}
+
+const allModules = ref<ModuleDetail[]>([]);
 const loading = ref(true);
+const installingModule = ref<string | null>(null);
+
+const installedPacks = computed(() => {
+  return allModules.value.filter(m => m.status.includes('Active'));
+});
+
+const availablePacks = computed(() => {
+  return allModules.value.filter(m => m.status.includes('Available'));
+});
 
 const getModuleIcon = (name: string) => {
   if (name.toLowerCase().includes('pilot')) return 'mdi-account-group';
   if (name.toLowerCase().includes('rifle')) return 'mdi-pistol';
   if (name.toLowerCase().includes('shield')) return 'mdi-shield-check';
+  if (name.toLowerCase().includes('hr')) return 'mdi-badge-account-horizontal-outline';
+  if (name.toLowerCase().includes('medic')) return 'mdi-hospital-box';
   return 'mdi-cube-outline';
 }
 
@@ -131,20 +168,42 @@ const logout = () => {
   router.push('/login');
 }
 
-onMounted(async () => {
+const fetchModules = async () => {
+  loading.value = true;
   const token = localStorage.getItem('gundam_jwt');
   try {
     const response = await axios.get('/api/core/modules', {
       headers: { Authorization: `Bearer ${token}` }
     });
-    activeModules.value = response.data.data;
+    allModules.value = response.data.data;
   } catch (error: any) {
     if (error.response?.status === 401) {
-      logout(); // Token invalid
+      logout();
     }
   } finally {
     loading.value = false;
   }
+}
+
+const installModule = async (moduleName: string) => {
+  installingModule.value = moduleName;
+  const token = localStorage.getItem('gundam_jwt');
+  try {
+    await axios.post('/api/core/modules/install', { moduleName }, {
+      headers: { Authorization: `Bearer ${token}` }
+    });
+    // Re-fetch radar after successful installation
+    await fetchModules();
+  } catch (error) {
+    console.error("Failed to install module:", error);
+    alert(`Failed to activate ${moduleName}`);
+  } finally {
+    installingModule.value = null;
+  }
+}
+
+onMounted(() => {
+  fetchModules();
 });
 </script>
 
@@ -183,14 +242,9 @@ onMounted(async () => {
 .tactical-card {
   background: rgba(18, 28, 34, 0.6) !important;
   backdrop-filter: blur(12px);
-  border: 1px solid rgba(0, 209, 255, 0.2) !important;
+  border: 1px solid rgba(0, 232, 143, 0.3) !important;
   border-radius: 8px;
   transition: all 0.3s ease;
-}
-
-.tactical-card:hover {
-  border-color: rgba(0, 209, 255, 0.5) !important;
-  box-shadow: 0 0 15px rgba(0, 209, 255, 0.1) !important;
 }
 
 .pulse-chip {

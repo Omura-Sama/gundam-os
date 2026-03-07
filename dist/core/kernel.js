@@ -41,15 +41,21 @@ const fs_1 = __importDefault(require("fs"));
 const path_1 = __importDefault(require("path"));
 class GundamKernel {
     installedModules = new Map();
+    availableModules = new Map();
+    appInstance;
     // Fungsi install satu per satu
     register(module, app) {
+        if (this.installedModules.has(module.name))
+            return;
         console.log(`[SYSTEM] Initializing Module: ${module.name} v${module.version}...`);
         module.install(app);
         this.installedModules.set(module.name, module);
+        this.availableModules.delete(module.name);
         console.log(`[SYSTEM] Module ${module.name} is Online! 🛡️`);
     }
-    // Fungsi Auto-Scan Folder (Dynamic Loader)
+    // Fungsi Auto-Scan Folder (Dynamic Loader/Discovery)
     async boot(app) {
+        this.appInstance = app;
         console.log("[SYSTEM] Scanning for Striker Packs in /modules...");
         const modulesPath = path_1.default.join(__dirname, '../modules');
         if (!fs_1.default.existsSync(modulesPath)) {
@@ -63,13 +69,16 @@ class GundamKernel {
                 const indexPath = path_1.default.join(moduleDir, 'index.ts');
                 if (fs_1.default.existsSync(indexPath)) {
                     try {
-                        // Import file index.ts secara dinamis
                         const importedModule = await Promise.resolve(`${indexPath}`).then(s => __importStar(require(s)));
-                        // Cari object yang sesuai dengan interface GundamModule
                         for (const key in importedModule) {
                             const mod = importedModule[key];
                             if (mod && mod.name && mod.version && typeof mod.install === 'function') {
-                                this.register(mod, app);
+                                if (mod.autoStart) {
+                                    this.register(mod, app);
+                                }
+                                else {
+                                    this.availableModules.set(mod.name, mod);
+                                }
                             }
                         }
                     }
@@ -80,6 +89,15 @@ class GundamKernel {
             }
         }
     }
+    activateModule(name) {
+        if (!this.appInstance)
+            throw new Error("Core system not running.");
+        const modToInstall = this.availableModules.get(name);
+        if (!modToInstall)
+            return false;
+        this.register(modToInstall, this.appInstance);
+        return true;
+    }
     listModules() {
         return Array.from(this.installedModules.keys());
     }
@@ -89,7 +107,16 @@ class GundamKernel {
             details.push({
                 name: mod.name,
                 version: mod.version,
-                status: 'Online 🟢'
+                description: mod.description,
+                status: 'Active 🟢'
+            });
+        });
+        this.availableModules.forEach((mod) => {
+            details.push({
+                name: mod.name,
+                version: mod.version,
+                description: mod.description,
+                status: 'Available 🟡'
             });
         });
         return details;

@@ -12,9 +12,25 @@ export function CoreSystemAPI(kernel: GundamKernel) {
 
         res.json({
             message: "Tactical HUD: Module Status Report",
-            total_active: activeModules.length,
+            total_modules: activeModules.length,
             data: activeModules
         });
+    });
+
+    router.post('/modules/install', (req: Request, res: Response) => {
+        const { moduleName } = req.body;
+
+        if (!moduleName) {
+            return res.status(400).json({ message: "Module name required." });
+        }
+
+        const success = kernel.activateModule(moduleName);
+
+        if (success) {
+            res.json({ message: `Striker Pack ${moduleName} activated successfully!` });
+        } else {
+            res.status(404).json({ message: `Module ${moduleName} not found or already active.` });
+        }
     });
 
     return router;
