@@ -1,7 +1,9 @@
 import { createRouter, createWebHistory } from 'vue-router';
 // Import views lazily
+const DashboardLayout = () => import('../layouts/DashboardLayout.vue');
 const HomeView = () => import('../views/HomeView.vue');
 const LoginView = () => import('../views/LoginView.vue');
+const PilotRosterView = () => import('../views/modules/PilotRosterView.vue');
 
 const router = createRouter({
     history: createWebHistory(import.meta.env.BASE_URL),
@@ -13,9 +15,20 @@ const router = createRouter({
         },
         {
             path: '/',
-            name: 'home',
-            component: HomeView,
-            meta: { requiresAuth: true }
+            component: DashboardLayout,
+            meta: { requiresAuth: true },
+            children: [
+                {
+                    path: '',
+                    name: 'home',
+                    component: HomeView
+                },
+                {
+                    path: 'module/pilot-roster',
+                    name: 'pilot-roster',
+                    component: PilotRosterView
+                }
+            ]
         }
     ]
 });

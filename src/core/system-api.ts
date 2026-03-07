@@ -1,9 +1,35 @@
 import { Router, Request, Response } from 'express';
 import { GundamKernel } from './kernel';
+import os from 'os';
 
 // Fungsi ini menerima instance dari kernel agar bisa membaca data yang sedang berjalan
 export function CoreSystemAPI(kernel: GundamKernel) {
     const router = Router();
+
+    // Endpoint: Core OS Health Telemetry
+    router.get('/health', (req: Request, res: Response) => {
+        const totalMem = os.totalmem();
+        const freeMem = os.freemem();
+        const usedMem = totalMem - freeMem;
+        const memoryUsageRatio = (usedMem / totalMem) * 100;
+
+        // Mendapatkan Load CPU 1 Menit terakhir
+        const loadAvg = os.loadavg();
+
+        res.json({
+            message: "Tactical HUD: Core Vital Signs",
+            data: {
+                uptime: process.uptime(),
+                cpuLoad: loadAvg[0], // 1 minute load average
+                memory: {
+                    total: totalMem,
+                    free: freeMem,
+                    used: usedMem,
+                    usagePercent: memoryUsageRatio.toFixed(2)
+                }
+            }
+        });
+    });
 
     // Endpoint Tactical HUD: Melihat daftar persenjataan/modul yang aktif
     // TODO: Integrasikan dengan middleware JWT Auth (isSuperAdmin) di sini nantinya
