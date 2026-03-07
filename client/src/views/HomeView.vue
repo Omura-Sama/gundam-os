@@ -14,7 +14,7 @@
         WARNING: MISSION PARAMETERS ESTABLISHED. ARMOR AND WEAPONRY SETUP REQUIRED.
       </div>
       <template v-slot:actions>
-        <v-btn color="white" variant="text" @click="aiWarning = false">ACKNOWLEDGE</v-btn>
+        <v-btn color="white" variant="elevated" class="text-error font-weight-bold" @click="aiWarning = false">ACKNOWLEDGE</v-btn>
       </template>
     </v-snackbar>
 
